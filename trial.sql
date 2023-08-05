@@ -61,11 +61,60 @@ inner join film as f
 on i.film_id=f.film_id
 where i.inventory_id not in(select inventory_id from rental);
 
+-- film and how many they are in the inventorty
 SELECT f.film_id, f.title,COUNT(*) AS occurrence_count
 FROM film AS f
 INNER JOIN inventory AS i 
 ON f.film_id = i.film_id
 GROUP BY f.film_id, f.title;
+
+-- select all values from the rental table with null return dates
+select * from rental
+where return_date is null;
+
+-- replacing the return date with 'statement' if null for specific id
+select customer_id,rental_date,coalesce(return_date,'Not yet returned') as return_date
+from rental
+where customer_id=155;
+
+
+-- city that has more than one customer coming from it
+select city.city_id,city.city,count(city.city_id) as no_of_customers
+ -- c.customer_id,a.address_id, 
+from customer as c
+inner join address as a
+on c.address_id=a.address_id
+inner join city 
+on a.city_id = city.city_id
+group by city_id
+having count(city.city_id)>1;
+
+-- city and number of customers
+select city.city,city.city_id,count(city.city_id) as count
+ -- c.customer_id,a.address_id, 
+from customer as c
+inner join address as a
+on c.address_id=a.address_id
+inner join city
+on city.city_id = a.city_id
+group by city.city_id
+having count>1;
+
+-- customer per store
+select count(customer_id),store_id
+from customer
+group by store_id;
+
+-- duplicating files
+create table actor_duplicate 
+as
+select * from actor;
+
+select * from actor_duplicate;
+
+drop table if exists actor_duplicate;
+
+
 
 
 

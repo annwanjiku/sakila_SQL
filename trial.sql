@@ -1,27 +1,27 @@
-use sakila;
-select * from actor;
+USE sakila;
+SELECT * FROM actor;
 
-select* from customer;
+SELECT* FROM customer;
 
 -- Total number of films
-select count(*) as total_films
-from film;
+SELECT COUNT(*) AS total_films
+FROM film;
 
 -- Customers and their rental details(joins)
-select c.customer_id,last_name,rental_date,return_date,rental_id
-from rental as r 
-inner join customer as c
-on r.customer_id = c.customer_id;
+SELECT c.customer_id,last_name,rental_date,return_date,rental_id
+FROM rental AS r 
+INNER JOIN customer AS c
+ON r.customer_id = c.customer_id;
 
 -- films rented customer and the customers name
-select r.customer_id,c.last_name,f.title,f.description,r.rental_date
-from film as f
-inner join inventory as i 
-on f.film_id=i.inventory_id
-inner join rental as r
-on i.inventory_id =r.inventory_id
-inner join customer as c
-on c.customer_id = r.customer_id;
+SELECT r.customer_id,c.last_name,f.title,f.description,r.rental_date
+FROM film AS f
+INNER JOIN inventory AS i 
+ON f.film_id=i.inventory_id
+INNER JOIN rental AS r
+ON i.inventory_id =r.inventory_id
+INNER JOIN customer AS c
+ON c.customer_id = r.customer_id;
 
 -- Top 5 films with the highest rental duration
 
@@ -34,32 +34,32 @@ INNER JOIN inventory AS i ON f.film_id = i.film_id
 INNER JOIN rental AS r ON i.inventory_id = r.inventory_id
 GROUP BY f.title
 ORDER BY period ASC
-limit 5;
+LIMIT 5;
 
 -- Finding a customer that has not rented anything 
-select last_name,r.customer_id
-from customer as c
-left join rental as r on c.customer_id = r.customer_id
-where r.customer_id is null;
+SELECT last_name,r.customer_id
+FROM customer AS c
+LEFT JOIN rental AS r ON c.customer_id = r.customer_id
+WHERE r.customer_id IS NULL;
 
 -- customers and times they rented a film
-select c.first_name,count(r.customer_id) as rental_count
-from rental as r
-inner join customer as c
-on r.customer_id=c.customer_id
-group by first_name
-order by rental_count desc;
+SELECT c.first_name,COUNT(r.customer_id) AS rental_count
+FROM rental AS r
+INNER JOIN customer AS c
+ON r.customer_id=c.customer_id
+GROUP BY first_name
+ORDER BY rental_count DESC;
 
 -- Retrieve the films that are available for rental.
-select fc.category_id,i.film_id,c.name as category_name,f.title,i.inventory_id
-from inventory as i
-inner join film_category as fc
-on i.film_id=fc.film_id
-inner join category as c
-on c.category_id=fc.category_id
-inner join film as f
-on i.film_id=f.film_id
-where i.inventory_id not in(select inventory_id from rental);
+SELECT fc.category_id,i.film_id,c.name AS category_name,f.title,i.inventory_id
+FROM inventory AS i
+INNER JOIN film_category AS fc
+ON i.film_id=fc.film_id
+INNER JOIN category AS c
+ON c.category_id=fc.category_id
+INNER JOIN film AS f
+ON i.film_id=f.film_id
+WHERE i.inventory_id NOT IN(SELECT inventory_id FROM rental);
 
 -- film and how many they are in the inventorty
 SELECT f.film_id, f.title,COUNT(*) AS occurrence_count
@@ -69,50 +69,89 @@ ON f.film_id = i.film_id
 GROUP BY f.film_id, f.title;
 
 -- select all values from the rental table with null return dates
-select * from rental
-where return_date is null;
+SELECT * FROM rental
+WHERE return_date IS NULL;
 
 -- replacing the return date with 'statement' if null for specific id
-select customer_id,rental_date,coalesce(return_date,'Not yet returned') as return_date
-from rental
-where customer_id=155;
+SELECT customer_id,rental_date,COALESCE(return_date,'Not yet returned') AS return_date
+FROM rental
+WHERE customer_id=155;
 
 
 -- city that has more than one customer coming from it
-select city.city_id,city.city,count(city.city_id) as no_of_customers
+SELECT city.city_id,city.city,COUNT(city.city_id) AS no_of_customers
  -- c.customer_id,a.address_id, 
-from customer as c
-inner join address as a
-on c.address_id=a.address_id
-inner join city 
-on a.city_id = city.city_id
-group by city_id
-having count(city.city_id)>1;
+FROM customer AS c
+INNER JOIN address AS a
+ON c.address_id=a.address_id
+INNER JOIN city 
+ON a.city_id = city.city_id
+GROUP BY city_id
+HAVING COUNT(city.city_id)>1;
 
 -- city and number of customers
-select city.city,city.city_id,count(city.city_id) as count
+SELECT city.city,city.city_id,COUNT(city.city_id) AS count
  -- c.customer_id,a.address_id, 
-from customer as c
-inner join address as a
-on c.address_id=a.address_id
-inner join city
-on city.city_id = a.city_id
-group by city.city_id
-having count>1;
+FROM customer AS c
+INNER JOIN address AS a
+ON c.address_id=a.address_id
+INNER JOIN city
+ON city.city_id = a.city_id
+GROUP BY city.city_id
+HAVING count>1;
 
 -- customer per store
-select count(customer_id),store_id
-from customer
-group by store_id;
+SELECT COUNT(customer_id),store_id
+FROM customer
+GROUP BY store_id;
 
 -- duplicating files
-create table actor_duplicate 
-as
-select * from actor;
+CREATE TABLE actor_duplicate 
+AS
+SELECT * FROM actor;
 
-select * from actor_duplicate;
+SELECT * FROM actor_duplicate;
 
-drop table if exists actor_duplicate;
+-- dropping tables and procedures using if exists
+DROP TABLE IF EXISTS actor_duplicate;
+
+DROP PROCEDURE IF EXISTS DEL;
+
+-- creating stored procedure that takes in parameters
+
+DELIMITER //
+CREATE PROCEDURE CALL_BY_NAME(IN P_FIRST_NAME VARCHAR(45))
+
+BEGIN
+SELECT FIRST_NAME,LAST_NAME 
+FROM ACTOR 
+WHERE FIRST_NAME = P_FIRST_NAME;
+END //
+
+DELIMITER ;
+
+CALL CALL_BY_NAME("PENELOPE");
+-- counting results using found_rows() function
+SELECT FOUND_ROWS();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
